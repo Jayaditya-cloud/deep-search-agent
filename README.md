@@ -150,6 +150,19 @@ Based on the provided research context, the current CEO of Apple is Tim Cook [1]
 Based on the provided sources, the company that acquired GitHub is Microsoft, and its CEO is Satya Nadella [1]. However, the provided context does not contain any information regarding where Satya Nadella went to college.
 *(Agent lists exact source URLs below)*
 
+**User**: What are the key differences between rabi and kharif crops?
+**Agent Response**:
+Based on the provided context, the key differences are:
+* **Sowing Season**: Kharif crops are sown at the beginning of the monsoon season (June/July), while Rabi crops are sown in winter (October/November) [1].
+* **Harvesting**: Kharif is harvested in Sept/Oct, whereas Rabi is harvested in spring (April/May) [2].
+* **Water Dependency**: Kharif requires significantly more rainfall to thrive compared to Rabi crops [3].
+*(Agent lists exact source URLs below)*
+
+**User**: What did the Prime Minister of India have for dinner on May 15th, 2026?
+**Agent Response**:
+The sources mention that Prime Minister Narendra Modi traveled to Abu Dhabi on May 15th, 2026 [1]. However, the provided context does not contain any factual information regarding what he had for dinner on that specific date.
+*(Agent lists exact source URLs below)*
+
 ---
 
 ## Evaluation Methodology and Findings
