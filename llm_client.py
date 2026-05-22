@@ -29,7 +29,7 @@ class LLMClient:
         # Using Gemini's standard REST endpoint
         self.base_url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
 
-    def generate_response(self, query: str, context: str, chat_history: list = None) -> Optional[str]:
+    def generate_response(self, query: str, context: str, chat_history: list = None, progress_cb=None) -> Optional[str]:
         """
         Generates a final synthesized response based on the search context and past chat history.
         
@@ -87,7 +87,7 @@ class LLMClient:
         # Gemini takes the API key either as a query param or an x-goog-api-key header
         params = {"key": self.api_key}
         
-        max_retries = 6
+        max_retries = 5  # Total retry wait time will be ~2.5 minutes (10s + 20s + 40s + 80s)
         backoff = 10.0
         
         for attempt in range(max_retries):
@@ -99,12 +99,21 @@ class LLMClient:
                 if response.status_code == 429:
                     if attempt < max_retries - 1:
                         logger.warning(f"Rate limit exceeded (HTTP 429) for Gemini API. Retrying in {backoff}s...")
+                        if progress_cb:
+                            progress_cb("synthesize", f"API rate limit reached. Retrying in {int(backoff)} seconds... (Attempt {attempt+1}/{max_retries})")
                         time.sleep(backoff)
                         backoff *= 2
                         continue
                     else:
                         logger.warning("Rate limit exceeded (HTTP 429) for Gemini API. No retries remaining.")
                         return "Error: LLM rate limit exceeded."
+                elif response.status_code in (400, 401, 403, 404):
+                    try:
+                        error_msg = response.json().get('error', {}).get('message', 'Client Error')
+                    except:
+                        error_msg = response.text
+                    logger.error(f"Client error from API: {error_msg}")
+                    return f"Error: API configuration issue ({error_msg}). Please check your API key and model name."
                     
                 response.raise_for_status()
                 
@@ -119,6 +128,8 @@ class LLMClient:
                 logger.error(f"LLM request encountered an error: {e}")
                 if attempt < max_retries - 1:
                     logger.warning(f"Retrying request after error in {backoff}s...")
+                    if progress_cb:
+                        progress_cb("synthesize", f"Network error. Retrying in {int(backoff)} seconds... (Attempt {attempt+1}/{max_retries})")
                     time.sleep(backoff)
                     backoff *= 2
                     continue

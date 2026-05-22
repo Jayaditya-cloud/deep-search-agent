@@ -104,7 +104,7 @@ def run_research_agent(query: str, max_search_results: int = 3, chat_history: li
         response = "I could not retrieve enough reliable information to answer your query."
     else:
         llm = LLMClient()
-        response = llm.generate_response(query, context, chat_history)
+        response = llm.generate_response(query, context, chat_history, progress_cb=_step)
         
         if not response:
             response = "Error: LLM generation failed due to missing API key or network error."
