@@ -2,13 +2,13 @@
 
 A robust, web-based research assistant powered by a Large Language Model (Gemini) and Web Search (Tavily). The agent accepts user queries, searches the web, analyzes content, and provides citation-grounded answers with full visibility into its intermediate reasoning steps.
 
-## Deliverables Met
-- **Working app**: A responsive web UI built with Flask, providing real-time streaming updates.
-- **Web research ingestion**: Utilizes the Tavily Search API to gather accurate and relevant web pages.
-- **Persistent sessions**: SQLite database (`agent_memory.db`) tracks conversation history and persists context across turns.
-- **Citation-grounded answers**: Responses include inline citations and references (URL/title/domain).
-- **Streaming intermediate step updates**: Server-Sent Events (SSE) stream the agent's live actions (searching, reading, analyzing) directly to the UI.
-- **Evaluation harness**: Includes an evaluation system that records queries, responses, citation counts, and durations in `evaluation_report.csv`.
+## Core Features
+- **Real-time Web Research**: Dynamically queries the web to gather accurate and up-to-date information.
+- **Citation-Grounded Answers**: Every fact in the response is backed by inline citations linking directly to the source.
+- **Transparent Reasoning**: Watch the agent "think" in real-time as it searches, reads, and analyzes data right on your screen.
+- **Persistent Memory**: Chat history and context are saved across sessions, allowing for deep, multi-turn conversations.
+- **Responsive Web Interface**: A clean, modern UI accessible from any device.
+- **Built-in Evaluation System**: Automatically tracks the agent's accuracy, duration, and citation metrics for continuous improvement.
 
 ---
 
