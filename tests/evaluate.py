@@ -54,7 +54,7 @@ def evaluate_with_llm(query, response, citations, chat_history=None):
         print("Missing API key for evaluation.")
         return {"grounding_score": 0, "correctness_score": 0, "uncertainty_score": 0, "reasoning": "No API key"}
     
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
     
     prompt = f"""
     Evaluate the following response to a user query.

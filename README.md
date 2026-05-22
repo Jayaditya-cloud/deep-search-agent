@@ -140,16 +140,15 @@ SQLite (`database.py`) is used to store `turn_metrics` and chat history. A `last
 
 ## Example Conversations
 
-**User**: What is the current interest rate set by the US Federal Reserve?
+**User**: Who is the CEO of Apple?
 **Agent Response**:
-Based on the provided research context, the interest rates set by the US Federal Reserve are as follows:
-* **Target Federal Funds Rate:** The Federal Open Market Committee (FOMC) maintains the target federal funds interest rate at a range of 3.50% to 3.75% [1]. This rate was held steady at this range during the April 29, 2026 meeting [2].
-* **Benchmark Interest Rate:** The benchmark interest rate in the United States was last recorded at 3.75% [3].
+Based on the provided research context, the current CEO of Apple is Tim Cook [1]. He assumed the position in August 2011, succeeding Steve Jobs [2].
 *(Agent lists exact source URLs below)*
 
 **User**: Who is the CEO of the company that acquired GitHub, and where did they go to college?
 **Agent Response**:
 Based on the provided sources, the company that acquired GitHub is Microsoft, and its CEO is Satya Nadella [1]. However, the provided context does not contain any information regarding where Satya Nadella went to college.
+*(Agent lists exact source URLs below)*
 
 ---
 

@@ -12,7 +12,7 @@ class LLMClient:
     Uses pure `requests` to remain lightweight and avoid heavy frameworks.
     """
     
-    def __init__(self, api_key: str = None, model: str = "gemini-2.5-flash"):
+    def __init__(self, api_key: str = None, model: str = "gemini-3.5-flash"):
         """
         Initializes the LLMClient.
         
