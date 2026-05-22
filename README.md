@@ -12,8 +12,6 @@ A robust, web-based research assistant powered by a Large Language Model (Gemini
 
 ---
 
-## Video Demo
-*(Insert your video demo link here)*
 
 ---
 
@@ -124,6 +122,13 @@ Instead, it must be deployed to a cloud platform that supports dynamic Python ru
 5. Set environment variables using a `.env` file in your project directory or within the WSGI configuration file.
 
 ---
+
+## Video Demo
+*(Insert your video demo link here)
+
+
+---
+
 
 ## Design Note (Part 1)
 
