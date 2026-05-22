@@ -13,8 +13,6 @@ A robust, web-based research assistant powered by a Large Language Model (Gemini
 ---
 
 
----
-
 ## Setup and Run Instructions
 
 ### Prerequisites
