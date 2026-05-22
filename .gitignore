@@ -1,0 +1,36 @@
+# Environment variables — NEVER commit your API keys
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Database (local only — Render will create its own)
+agent_memory.db
+*.db
+*.sqlite3
+
+# Session tracking
+last_session_id.txt
+
+# pytest cache
+.pytest_cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+out.txt
+
+# CSV reports (optional — remove this line if you want to commit results)
+evaluation_report.csv

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lite Search</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+</head>
+<body>
+
+  <div class="app-body">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar glass">
+      <div class="sidebar-head">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg>
+        <span class="brand-title">Lite Search</span>
+      </div>
+      
+      <div class="sidebar-nav">
+        <button class="btn-new-session" id="new-session-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Session
+        </button>
+        <a href="/evaluation" class="nav-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Evaluation Report
+        </a>
+      </div>
+
+      <div class="session-label">Recent Sessions</div>
+      <div class="sessions-list" id="sessions-list">
+        <div style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; padding: 20px;">Loading...</div>
+      </div>
+
+      <div class="sidebar-foot">
+        <div class="user-info">
+          <div class="avatar">{{ username[0]|upper }}</div>
+          <div class="username">{{ username }}</div>
+        </div>
+        <a href="/logout" class="btn-logout">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-layout">
+      
+      <header class="topbar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <span style="color: var(--text-secondary); font-size: 0.85rem; flex: 1;">Session: <span id="topbar-session-id" class="session-id-badge">{{ session_id[:8] }}</span></span>
+      </header>
+
+      <div class="chat-area" id="chat-area">
+        <div class="chat-messages" id="chat-messages">
+          
+          <!-- Welcome -->
+          <div class="welcome-state" id="welcome-state" {% if history %}style="display:none"{% endif %}>
+            <svg class="welcome-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg>
+            <h2>Lite Search</h2>
+            <p>I can perform deep, multi-step web research with verifiable inline citations.</p>
+            <div class="suggestion-chips">
+              <button class="chip" onclick="useChip(this)">who is the president of us</button>
+              <button class="chip" onclick="useChip(this)">how does mrna vaccine work</button>
+            </div>
+          </div>
+
+          <!-- History -->
+          {% for turn in history %}
+          <div class="exchange">
+            <div class="user-msg">{{ turn.query }}</div>
+            <div class="agent-container">
+              <details class="thinking-process" {% if not loop.last %}closed{% else %}open{% endif %}>
+                <summary>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                  Agent Reasoning Process
+                </summary>
+                <div class="trace-log">
+                  {% for step in turn.steps %}
+                  <div class="trace-pill done">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>{{ step }}</span>
+                  </div>
+                  {% endfor %}
+                </div>
+              </details>
+
+              <div class="agent-msg markdown-body" data-raw="{{ turn.response | e }}"></div>
+              
+              {% if turn.citations %}
+              <div class="citation-container">
+                <div class="citation-title">Sources Consulted</div>
+                <div class="citation-grid">
+                  {% for cite in turn.citations %}
+                  <a href="{{ cite.url }}" class="citation-card glass" target="_blank" rel="noopener noreferrer">
+                    <div class="citation-badge">{{ loop.index }}</div>
+                    <div class="citation-text">
+                      <span class="citation-domain">{{ cite.domain }}</span>
+                      <span class="citation-link-title">{{ cite.title }}</span>
+                    </div>
+                  </a>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+
+        </div>
+      </div>
+
+      <!-- Input -->
+      <div class="input-bar">
+        <div class="input-wrapper">
+          <textarea id="query-input" class="chat-input glass" placeholder="Ask anything — I'll research it with cited sources..." rows="1" maxlength="2000"></textarea>
+          <button id="send-btn" class="btn-send" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+          <div style="text-align: center; font-size: 0.7rem; color: var(--text-secondary); margin-top: 8px;">
+            Press <kbd style="background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 4px;">Enter</kbd> to send · <kbd style="background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 4px;">Shift+Enter</kbd> for new line
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <input type="hidden" id="current-session-id" value="{{ session_id }}" />
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

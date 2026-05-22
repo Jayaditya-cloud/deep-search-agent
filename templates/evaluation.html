@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evaluation Report — Lite Search</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body class="eval-body">
+
+  <header class="eval-header glass" style="border-radius: 0; border-top: none; border-left: none; border-right: none;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <a href="/" style="color: var(--text-secondary); text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 500; transition: var(--t);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Back to Chat
+      </a>
+      <div style="width: 1px; height: 24px; background: var(--border); margin: 0 12px;"></div>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <h1 style="font-size: 1.2rem; font-weight: 600;">Evaluation Report</h1>
+    </div>
+    <div class="user-info">
+      <div class="avatar">{{ username[0]|upper }}</div>
+    </div>
+  </header>  <main class="eval-container">
+
+    {% if rows %}
+    {% set total = rows|length %}
+    {% set cited = rows|selectattr('citations_count', 'ne', '0')|list|length %}
+    {% set avg_citations = (rows|map(attribute='citations_count')|map('int')|sum / total)|round(1) %}
+    {% set avg_duration  = (rows|map(attribute='duration_seconds')|map('float')|sum / total)|round(2) %}
+
+    {# Compute LLM judge averages #}
+    {% set total_grounding = namespace(val=0.0) %}
+    {% set total_correctness = namespace(val=0.0) %}
+    {% set total_uncertainty = namespace(val=0.0) %}
+    {% set total_robustness = namespace(val=0.0) %}
+    {% set robustness_count = namespace(val=0) %}
+
+    {% for row in rows %}
+      {% set grounding_val = row.grounding_score|default(0)|float %}
+      {% set correctness_val = row.correctness_score|default(0)|float %}
+      {% set uncertainty_val = row.uncertainty_score|default(0)|float %}
+      {% set robustness_val = row.robustness_score|default('N/A') %}
+
+      {% set total_grounding.val = total_grounding.val + grounding_val %}
+      {% set total_correctness.val = total_correctness.val + correctness_val %}
+      {% set total_uncertainty.val = total_uncertainty.val + uncertainty_val %}
+
+      {% if robustness_val != 'N/A' and robustness_val != '' %}
+        {% set total_robustness.val = total_robustness.val + robustness_val|float %}
+        {% set robustness_count.val = robustness_count.val + 1 %}
+      {% endif %}
+    {% endfor %}
+
+    {% set avg_grounding = (total_grounding.val / total)|round(2) %}
+    {% set avg_correctness = (total_correctness.val / total)|round(2) %}
+    {% set avg_uncertainty = (total_uncertainty.val / total)|round(2) %}
+    {% set avg_robustness = (total_robustness.val / robustness_count.val)|round(2) if robustness_count.val > 0 else 'N/A' %}
+
+    <div class="eval-stats">
+      <!-- First Row of General Stats -->
+      <div class="stat-card glass">
+        <div class="stat-val">{{ total }}</div>
+        <div class="stat-lbl">Test Queries</div>
+      </div>
+      <div class="stat-card glass">
+        <div class="stat-val">{{ cited }}/{{ total }}</div>
+        <div class="stat-lbl">With Citations</div>
+      </div>
+      <div class="stat-card glass">
+        <div class="stat-val">{{ avg_citations }}</div>
+        <div class="stat-lbl">Avg. Citations</div>
+      </div>
+      <div class="stat-card glass">
+        <div class="stat-val">{{ avg_duration }}s</div>
+        <div class="stat-lbl">Avg. Time</div>
+      </div>
+      
+      <!-- Second Row of LLM Judge Metrics -->
+      <div class="stat-card glass" style="border-color: rgba(129, 140, 248, 0.25);">
+        <div class="stat-val" style="color: var(--accent);">{{ avg_grounding }}</div>
+        <div class="stat-lbl">Avg Grounding</div>
+      </div>
+      <div class="stat-card glass" style="border-color: rgba(52, 211, 153, 0.25);">
+        <div class="stat-val" style="color: var(--success);">{{ avg_correctness }}</div>
+        <div class="stat-lbl">Avg Correctness</div>
+      </div>
+      <div class="stat-card glass" style="border-color: rgba(251, 191, 36, 0.25);">
+        <div class="stat-val" style="color: var(--warning);">{{ avg_uncertainty }}</div>
+        <div class="stat-lbl">Avg Uncertainty</div>
+      </div>
+      <div class="stat-card glass" style="border-color: rgba(255, 255, 255, 0.15);">
+        <div class="stat-val">{% if avg_robustness != 'N/A' %}{{ avg_robustness }}{% else %}N/A{% endif %}</div>
+        <div class="stat-lbl">Avg Robustness</div>
+      </div>
+    </div>
+
+    <h2 style="font-size: 1.4rem; font-weight: 600; margin-bottom: 24px; margin-top: 48px;">Evaluation Results</h2>
+    
+    <div class="eval-table-wrap glass">
+      <table class="eval-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Query</th>
+            <th>Type</th>
+            <th>Citations</th>
+            <th>Duration</th>
+            <th>Grounding</th>
+            <th>Correctness</th>
+            <th>Uncertainty</th>
+            <th>Robustness</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr>
+            <td style="font-family: 'JetBrains Mono'; color: var(--text-secondary);">{{ row.id }}</td>
+            <td style="font-weight: 500;">{{ row.query }}</td>
+            <td><span class="type-badge">{{ row.type }}</span></td>
+            <td>
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px; background: {% if row.citations_count|int > 0 %}rgba(52,211,153,0.1){% else %}rgba(255,255,255,0.05){% endif %}; color: {% if row.citations_count|int > 0 %}var(--success){% else %}var(--text-secondary){% endif %}; font-family: 'JetBrains Mono'; font-weight: 600; font-size: 0.8rem;">
+                {{ row.citations_count }}
+              </span>
+            </td>
+            <td style="font-family: 'JetBrains Mono';">{{ row.duration_seconds }}s</td>
+            <td>
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 24px; border-radius: 4px; background: rgba(129, 140, 248, 0.1); color: var(--accent); font-family: 'JetBrains Mono'; font-weight: 600; font-size: 0.8rem;">
+                {{ row.grounding_score }}/5
+              </span>
+            </td>
+            <td>
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 24px; border-radius: 4px; background: rgba(52, 211, 153, 0.1); color: var(--success); font-family: 'JetBrains Mono'; font-weight: 600; font-size: 0.8rem;">
+                {{ row.correctness_score }}/5
+              </span>
+            </td>
+            <td>
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 24px; border-radius: 4px; background: rgba(251, 191, 36, 0.1); color: var(--warning); font-family: 'JetBrains Mono'; font-weight: 600; font-size: 0.8rem;">
+                {{ row.uncertainty_score }}/5
+              </span>
+            </td>
+            <td>
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 24px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); font-family: 'JetBrains Mono'; font-weight: 600; font-size: 0.8rem;">
+                {{ row.robustness_score }}
+              </span>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="9" style="border-bottom: 1px solid var(--border); padding-top: 0; padding-bottom: 24px;">
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="background: rgba(0,0,0,0.2); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; color: var(--text-secondary);">
+                  <strong style="color: var(--text-primary);">Response Excerpt:</strong> {{ row.response[:300] }}{% if row.response|length > 300 %}…{% endif %}
+                </div>
+                {% if row.eval_reasoning %}
+                <div style="background: rgba(129, 140, 248, 0.03); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(129, 140, 248, 0.1); font-size: 0.85rem; color: var(--text-secondary);">
+                  <strong style="color: var(--accent);">LLM Judge Reasoning:</strong> {{ row.eval_reasoning }}
+                </div>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <h2 style="font-size: 1.4rem; font-weight: 600; margin-bottom: 24px; margin-top: 48px;">Methodology</h2>
+    <div class="glass" style="padding: 24px; border-radius: 16px;">
+      <ul style="list-style: none; display: flex; flex-direction: column; gap: 16px;">
+        <li style="display: flex; gap: 16px;">
+          <div style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; align-self: flex-start; font-family: 'JetBrains Mono'; font-size: 0.8rem; color: var(--accent);">Factual</div>
+          <div><p>Single-hop questions with a definitive, verifiable answer. Tests basic retrieval and citation grounding.</p></div>
+        </li>
+        <li style="display: flex; gap: 16px;">
+          <div style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; align-self: flex-start; font-family: 'JetBrains Mono'; font-size: 0.8rem; color: var(--warning);">Multi-Hop</div>
+          <div><p>Requires chaining facts across multiple sources. Tests deep reasoning and cross-source synthesis.</p></div>
+        </li>
+        <li style="display: flex; gap: 16px;">
+          <div style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; align-self: flex-start; font-family: 'JetBrains Mono'; font-size: 0.8rem; color: var(--danger);">Insuf-Evidence</div>
+          <div><p>Unanswerable questions. Tests whether the agent correctly refuses to hallucinate and admits knowledge gaps.</p></div>
+        </li>
+      </ul>
+    </div>
+
+    {% else %}
+    <div class="glass" style="text-align: center; padding: 60px; border-radius: 16px;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.5" style="margin-bottom: 16px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <h3 style="font-size: 1.2rem; font-weight: 500; margin-bottom: 8px;">No Data Found</h3>
+      <p style="color: var(--text-secondary); font-size: 0.9rem;">Run <code style="font-family: 'JetBrains Mono'; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">python tests/evaluate.py</code> to generate the evaluation report.</p>
+    </div>
+    {% endif %}
+  </main>
+
+</body>
+</html>
