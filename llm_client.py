@@ -133,7 +133,10 @@ class LLMClient:
                     time.sleep(backoff)
                     backoff *= 2
                     continue
-                return f"Error: Failed to generate response ({str(e)})."
+                error_str = str(e)
+                if self.api_key:
+                    error_str = error_str.replace(self.api_key, "[REDACTED_API_KEY]")
+                return f"Error: Failed to generate response ({error_str})."
             except (KeyError, IndexError) as e:
                 logger.error(f"Failed to parse LLM response: {e}")
                 return "Error: Unexpected API response format."

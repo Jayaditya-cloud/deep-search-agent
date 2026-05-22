@@ -104,7 +104,8 @@ def evaluate_with_llm(query, response, citations, chat_history=None):
             return json.loads(text)
         except Exception as e:
             if attempt < max_retries - 1:
-                print(f"Evaluator error: {e}. Retrying in {backoff}s...")
+                safe_error = str(e).replace(api_key, "[REDACTED_API_KEY]") if api_key else str(e)
+                print(f"Evaluator error: {safe_error}. Retrying in {backoff}s...")
                 import time as time_module
                 time_module.sleep(backoff)
                 backoff *= 2
