@@ -127,14 +127,37 @@ Instead, it must be deployed to a cloud platform that supports dynamic Python ru
 
 ## Design Note (Part 1)
 
-### Architecture Overview
-The system is divided into three main layers:
-1. **Frontend (UI)**: Built with plain HTML, CSS, and vanilla JavaScript. It uses Server-Sent Events (SSE) to display typing effects and real-time step updates (e.g., "Searching the web", "Reading web pages").
-2. **Backend (Flask)**: Handles routing, session management, user authentication, and orchestrates the SSE stream. It uses threading to run the agent asynchronously without blocking the web server.
-3. **Agent Core (`agent/main.py`)**: The brain of the application. It takes the query, uses `search_client.py` (Tavily) to find sources, fetches page content, and relies on the Gemini LLM to synthesize a final answer based strictly on the retrieved context.
+### Target Users and Problem Being Solved
+**Target Users**: Students, researchers, professionals, and general users who need accurate, verified information quickly.
+**Problem Being Solved**: Traditional LLMs often hallucinate or provide outdated information. This application solves the problem of unreliable AI generation by grounding every answer in real-time, cited web sources, ensuring factual accuracy and transparency.
 
-### Persistence
-SQLite (`database.py`) is used to store `turn_metrics` and chat history. A `last_session_id.txt` file helps quickly resume the most recent session upon restarting the app.
+### Definition of "Deep Research"
+For this implementation, "deep research" is defined as an automated, multi-step agentic workflow that goes beyond a simple web search. It involves intelligently querying a search engine, fetching the raw HTML of multiple pages, parsing the text to build a consolidated context window, and synthesizing a final answer that cross-references facts and explicitly cites its sources.
+
+### Success Metrics
+To best capture research quality, we measure the following metrics:
+1. **Grounding Score**: Measuring how accurately the final response is backed by the retrieved citations.
+2. **Correctness Score**: Measuring the factual accuracy and overall usefulness of the response.
+3. **Uncertainty Score**: Measuring the agent's ability to handle conflicting sources or admit when there is insufficient evidence (refusal to hallucinate).
+4. **Robustness Score**: Measuring the agent's ability to maintain context and accuracy across a multi-turn conversation.
+
+### Data Flow and Components
+The system follows a strict linear pipeline:
+1. **Search (`search_client.py`)**: The user's query is sent to the Tavily API to retrieve the top relevant URLs and snippets.
+2. **Page Fetch (`fetcher.py`)**: The raw HTML of the retrieved URLs is downloaded and parsed into clean text.
+3. **Context Selection (`context_builder.py`)**: The text from all sources is aggregated, truncated if necessary, and formatted into a single context block.
+4. **Answer Synthesis (`llm_client.py`)**: The Gemini LLM receives the prompt, chat history, and context block to generate the final response with inline citations.
+
+### Risks, Limitations, and Future Improvements
+**Risks and Limitations**:
+- **Rate Limits**: Heavy reliance on free-tier APIs (Gemini/Tavily) introduces the risk of HTTP 429 rate limit exhaustion, which stalls research.
+- **Low-Quality Sources**: The agent relies on the search engine's ranking; if top results are biased or low-quality, the synthesized answer will be affected.
+- **Conflicting Sources**: The agent must intelligently navigate disagreements between websites, which can sometimes lead to overly cautious or ambiguous answers.
+- **Context Length Limits**: Fetching massive web pages can easily exceed the LLM's token window, requiring aggressive truncation.
+
+**Future Improvements**:
+1. **Iterative "Re-Act" Loops**: Allowing the agent to evaluate its own context and choose to execute a *second* search with a refined query if the initial sources were poor.
+2. **Parallel Page Fetching**: Currently, pages are downloaded sequentially. Implementing asynchronous fetching (e.g., `asyncio`) would drastically reduce the time-to-answer.
 
 ---
 
