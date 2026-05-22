@@ -109,8 +109,8 @@ def evaluate_with_llm(query, response, citations, chat_history=None):
                 time_module.sleep(backoff)
                 backoff *= 2
                 continue
-            print(f"Error calling LLM evaluator: {e}")
-            return {"grounding_score": 0, "correctness_score": 0, "uncertainty_score": 0, "reasoning": str(e)}
+            error_msg = str(e).replace(api_key, "[REDACTED_API_KEY]")
+            return {"grounding_score": 0, "correctness_score": 0, "uncertainty_score": 0, "reasoning": error_msg}
 
 def run_evaluation():
     print("Starting Lite Search Evaluation...")
