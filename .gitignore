@@ -32,5 +32,4 @@ Thumbs.db
 *.log
 out.txt
 
-# CSV reports (optional — remove this line if you want to commit results)
-evaluation_report.csv
+
